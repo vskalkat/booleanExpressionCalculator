@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Equation Simplifier</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="calculatorView.js"></script>
+
+  <style>
+    #body{
+      text-align: center;
+    }
+    #expressionField{
+      padding: 5px;
+      border:solid 1px grey;
+      border-radius:4px;
+      width:200px;
+    }
+    #output{
+      width:100%;
+      height:200px;
+      background-color:#EEEEEE;
+      padding-top: 10px;
+      font-size:50px;
+      font-weight:900;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <h3>A1 Equation Simplifier</h3>
+    <hr>
+    <input id="expressionField" type="text" placeholder="A+1"> </input> <button id="simplifyBtn" class="btn-primary">Simplify!</button>
+    <div id="output"></div>
+  </div>
+</body>
+
+
+</html>

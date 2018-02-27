@@ -1,0 +1,11 @@
+{"expression":
+   {"name":"associative",
+       "description":"X+Y=Y+X.",
+       "antireq":""
+   }
+
+   {"name":"associative",
+       "description":"X+Y=Y+X.",
+       "antireq":""
+   }
+}
