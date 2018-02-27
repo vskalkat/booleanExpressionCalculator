@@ -7,14 +7,68 @@ app.use(bodyParser.json());
 
 app.use("", express.static(__dirname + ""));
 
+
+var newCourse = {
+  "syde322":
+     {"name":"Software Design",
+         "description":"Software requirements specification; software architecture; design patterns; software testing and quality assurance; software maintenance; design of efficient algorithms and methods for their analysis, mathematical algorithms, string processing algorithms, geometrical algorithms, exhaustive search and traversal techniques, introduction to lower bound theory and NP-completeness. Case studies and engineering examples.",
+         "prereq":"CS 240 or ECE 250 or MTE 140 or SYDE 223 or Level at least 3B Systems Design Engineering.",
+         "antireq":""
+    }
+}
+
 app.get('/', (req, res) => { //anonymous function
   console.log("GET request received for root");
   res.sendFile(__dirname + '/calculator.html');
 })
 
+app.get('/courses', (req, res) => { //anonymous function
+  console.log("GET request received");
+  fs.readFile(__dirname + "/" + "courses.json", 'utf8', function(err, data){
+    if(err && err.code == "ENOENT") { // anonymous callback function
+      console.error("Invalid filename provided")
+      return;
+    }
+    res.end(data);
+  });
+})
+
+app.post('/courses', (req, res) => { // anonymous function
+  console.log("POST request received");
+  fs.readFile(__dirname + "/" + "courses.json", 'utf8', function (err, data) { // using function construct
+    if (err && err.code == "ENOENT") { // anonymous callback function
+      console.error("Invalid filename provided");
+      return;
+    }
+    try {
+      var courses = JSON.parse(data);
+      var newCourse = req.body;
+      courses = Object.assign(courses, newCourse);
+      res.end(JSON.stringify(courses));
+
+    } catch (err) {
+      res.status(400).json({ error: "Invalid service request" });
+      console.error("Invalid service request");
+      return;
+    }
+  });
+})
+
+
+app.get('simplify/steps', (req, res) => { //anonymous function
+  console.log("GET request received");
+  fs.readFile(__dirname + "/" + "courses.json", 'utf8', function(err, data){
+    if(err && err.code == "ENOENT") { // anonymous callback function
+      console.error("Invalid filename provided")
+      return;
+    }
+    res.end(data);
+  });
+})
+
 app.post('/simplify/result', function (req, res) {
   var input = req.body.inputexp;
-  res.send(JSON.stringify(simplifyFacade.simplifyExpression(input)));
+  res.send(JSON.stringify(simplifyExpression(input)));
 })
 
 var server = app.listen(8042, function(){
@@ -22,16 +76,13 @@ var server = app.listen(8042, function(){
   console.log('Node.js server running at localhost:%s', port)
 })
 
+
 var simplifyFacade = new function(){
 
   this.simplifyExpression = function(expression){
-    input = firstSimplification(input); // Initial basic simplification
-    var minTerms = extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
-    var simplifiedTerms = find_prime_implicants(minTerms)
-    var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars) 
-    return simplifiedExpression
+    return ""
   } 
-
+  
   var combine = function (m, n) {
         var a = m.length, c = '', count = 0, i;
         for (i = 0; i < a; i++) {
@@ -114,6 +165,13 @@ var simplifyFacade = new function(){
         return IM;
     }
 
+    function simplifyExpression(input) {
+      input = firstSimplification(input);
+      // var minterms2 = ['0000', '0100', '1000', '0101', '1100', '0111', '1011', '1111'];
+
+      return JSON.stringify(extractMinTerms(input));
+    }
+
     function extractMinTerms(input) {
       var uniqueChars = unique_char(input);
       uniqueChars.sort();
@@ -135,8 +193,10 @@ var simplifyFacade = new function(){
       }
       console.log("min terms be");
       console.log(minTerms);
+      var simplifiedTerms = find_prime_implicants(minTerms)
+      var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
 
-      return minTerms;
+      return simplifiedExpression;
     }
 
     function makeExpression(simplifiedTerms, uniqueChars) {
