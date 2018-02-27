@@ -163,7 +163,8 @@ var find_prime_implicants = function(data) {
 function simplifyExpression(input) {
   input = firstSimplification(input);
   // var minterms2 = ['0000', '0100', '1000', '0101', '1100', '0111', '1011', '1111'];
-  return JSON.stringify(find_prime_implicants(extractMinTerms(input)));
+
+  return JSON.stringify(extractMinTerms(input));
 }
 
 function extractMinTerms(input) {
@@ -176,18 +177,49 @@ function extractMinTerms(input) {
      var token = tokens[x];
      var minTerm = "";
      for(var y = 0; y < uniqueChars.length; y++) {
-        minTerm += (token.indexOf(uniqueChars[y]) ==-1) ? "0" : "1";
+        var index = token.indexOf(uniqueChars[y]);
+        if(index != -1) {
+           minTerm += ((y == token.length -1) || token.charAt(index + 1) != '\'') ? "1" : "0";
+        } else {
+           minTerm += "x"
+        }
      }
      minTerms.push(minTerm);
   }
-  return minTerms;
+  console.log("min terms be");
+  console.log(minTerms);
+  var simplifiedTerms = find_prime_implicants(minTerms)
+  var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
+
+  return simplifiedExpression;
+}
+
+function makeExpression(simplifiedTerms, uniqueChars) {
+  var terms = ""
+  for(var x = 0; x < simplifiedTerms.length; x++) {
+     var term = simplifiedTerms[x]
+     var convertedTerm = "";
+     for(var y = 0; y < term.length; y++) {
+        if ( term.charAt(y) == '1' ) {
+           convertedTerm += uniqueChars[y]
+        } else if (term.charAt(y) == '0') {
+           convertedTerm += uniqueChars[y] + '\''
+        }
+     }
+     if(x != 0) {
+      terms += "+" 
+     }
+     
+     terms += convertedTerm
+  }
+  return terms;
 }
 
 function unique_char(str1) {
  var str=str1;
  var uniql= [];
  for (var x=0;x < str.length;x++) {
-   if(uniql.indexOf(str.charAt(x))==-1){
+   if((str.charAt(x).match(/[A-Z]/i) || str.charAt(x).match(/[a-z]/i)) && uniql.indexOf(str.charAt(x))==-1){
       uniql.push(str[x]);
    }
  }
