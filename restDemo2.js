@@ -25,8 +25,20 @@ var server = app.listen(8042, function(){
 var simplifyFacade = new function(){
 
   this.simplifyExpression = function(expression){
-    input = firstSimplification(input); // Initial basic simplification
-    var minTerms = extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
+    input = firstSimplification(expression); // Initial basic simplification
+    var minTermStruct = extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
+    var minTerms = minTermStruct.minTerms;
+    var uniqueChars = minTermStruct.uniqueChars
+    var simplifiedTerms = find_prime_implicants(minTerms)
+    var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars) 
+    return simplifiedExpression
+  } 
+
+  this.findSteps = function(expression){
+    input = firstSimplification(expression); // Initial basic simplification
+    var minTermStruct = extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
+    var minTerms = minTermStruct.minTerms;
+    var uniqueChars = minTermStruct.uniqueChars
     var simplifiedTerms = find_prime_implicants(minTerms)
     var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars) 
     return simplifiedExpression
@@ -136,7 +148,10 @@ var simplifyFacade = new function(){
       console.log("min terms be");
       console.log(minTerms);
 
-      return minTerms;
+      return {
+        minTerms: minTerms,
+        uniqueChars: uniqueChars
+      }
     }
 
     function makeExpression(simplifiedTerms, uniqueChars) {
