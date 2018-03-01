@@ -14,6 +14,10 @@ app.get('/', (req, res) => { //anonymous function
 
 app.post('/simplify/result', function (req, res) {
   var input = req.body.inputexp;
+
+  //res.send(JSON.stringify(simplifyFacade.simplifyExpression(input)));
+  var contentToSend = simplifyFacade.simplifyExpression(input);
+  console.log("Send CONTENT: " + contentToSend.minTerms);
   res.send(JSON.stringify(simplifyFacade.simplifyExpression(input)));
 })
 
@@ -30,9 +34,16 @@ var simplifyFacade = new function(){
     var minTerms = minTermStruct.minTerms;
     var uniqueChars = minTermStruct.uniqueChars
     var simplifiedTerms = find_prime_implicants(minTerms)
-    var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars) 
-    return simplifiedExpression
-  } 
+    var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
+    var output = {
+      uniqueChars : uniqueChars,
+      minTerms : minTerms,
+      steps : "",
+      simplifiedExpression : simplifiedExpression
+    };
+
+    return output;
+  }
 
   this.findSteps = function(expression){
     input = firstSimplification(expression); // Initial basic simplification
@@ -40,9 +51,9 @@ var simplifyFacade = new function(){
     var minTerms = minTermStruct.minTerms;
     var uniqueChars = minTermStruct.uniqueChars
     var simplifiedTerms = find_prime_implicants(minTerms)
-    var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars) 
+    var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
     return simplifiedExpression
-  } 
+  }
 
   var combine = function (m, n) {
         var a = m.length, c = '', count = 0, i;
@@ -167,7 +178,7 @@ var simplifyFacade = new function(){
             }
          }
          if(x != 0) {
-          terms += "+" 
+          terms += "+"
          }
 
          terms += convertedTerm
@@ -269,5 +280,4 @@ var simplifyFacade = new function(){
 
       return inputexp;
     }
-} 
-
+}

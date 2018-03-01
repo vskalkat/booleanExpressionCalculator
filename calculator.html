@@ -1,43 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
-<head>
-  <title>Equation Simplifier</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="calculatorView.js"></script>
+  <head>
 
-  <style>
-    #body{
-      text-align: center;
-    }
-    #expressionField{
-      padding: 5px;
-      border:solid 1px grey;
-      border-radius:4px;
-      width:200px;
-    }
-    #output{
-      width:100%;
-      height:200px;
-      background-color:#EEEEEE;
-      padding-top: 10px;
-      font-size:50px;
-      font-weight:900;
-    }
-  </style>
-</head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Simplify boolean expressions and see the steps.">
+    <meta name="author" content="Saif Khan - Vik Kalakt">
 
-<body>
-  <div class="container-fluid">
-    <h3>A1 Equation Simplifier</h3>
-    <hr>
-    <input id="expressionField" type="text" placeholder="A+1"> </input> <button id="simplifyBtn" class="btn-primary">Simplify!</button>
-    <div id="output"></div>
-  </div>
-</body>
+    <title>Boolean Simplifier</title>
 
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom fonts -->
+    <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!--Javascript files -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="calculatorView.js"></script>
+
+    <!-- Custom styles -->
+    <link href="css/calculator.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-light bg-light static-top">
+      <div class="container">
+        <a class="navbar-brand" >Boolean Simplifier</a>
+      </div>
+    </nav>
+
+    <!-- Input Section -->
+    <header class="inputSection text-white text-center">
+      <div class="overlay"></div>
+      <div class="container">
+        <div class="row">
+          <div class="col-xl-9 mx-auto">
+            <h1 class="mb-5">Boolean Simplifier</h1>
+          </div>
+          <div class="col-md-10 col-lg-8 col-xl-7 mx-auto">
+              <div class="row">
+                <div class="col-12 col-md-9 mb-2 mb-md-0">
+                  <input id="expressionField" type="text" class="form-control form-control-lg" placeholder="Enter boolean expression here...">
+                </div>
+                <div class="col-12 col-md-3">
+                  <button id="simplifyBtn" class="btn btn-block btn-lg btn-primary">Simplify!</button>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container solution">
+      <p class="headerText">Simplified Expression</h4>
+      <div id="output">
+      </div>
+    </div>
+
+    <!-- Minterms and Steps -->
+    <section class="showcase">
+      <div class="container-fluid p-0">
+        <div class="row no-gutters">
+          <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+            <p class="headerText">Minterms</p>
+            <table id="mindtermsTable" class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <!-- <th scope="col">First</th>
+                  <th scope="col">Last</th>
+                  <th scope="col">Handle</th> -->
+                </tr>
+              </thead>
+              <tbody>
+                <!-- <tr>
+                  <th scope="row">1</th>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td>@mdo</td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>Jacob</td>
+                  <td>Thornton</td>
+                  <td>@fat</td>
+                </tr> -->
+              </tbody>
+            </table>
+          </div>
+          <div class="col-lg-6 order-lg-2 my-auto showcase-text">
+            <p class="headerText">Steps</p>
+            <ul class="list-group">
+              <li class="list-group-item ">Steps list item 1</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </body>
 
 </html>

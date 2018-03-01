@@ -29,10 +29,37 @@ $(document).ready(function(){
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({ inputexp : inputexp })
       }).done(function(data) {
-        $("#output").html(data);
+        $("#output").html(data.simplifiedExpression);
+        createMintermTable(data.minTerms, data.uniqueChars);
       }).fail(function( data ) {
 
       });
+
+      function createMintermTable(minterms, chars) {
+        $("#mindtermsTable thead tr").html("<th scope='col'></th>");
+        $("#mindtermsTable tbody").html("");
+        //make the table header with the unique characters in the expression
+        if( chars ) {
+          chars.forEach(function(char){
+            $("#mindtermsTable thead tr").append("<th scope=col>" + char + "</th>");
+          });
+        }
+        //add the minterms to the table
+        if(minterms){
+          //add the minterm term
+          for (i = 0 ; i<minterms.length ; i++){
+            $("#mindtermsTable tbody").append("<tr><th scope='row'> m" + i + "</th><tr>");
+              //add the terms of the nth minterm
+              for (j=0 ; j<minterms[i].length ; j++) {
+                $("#mindtermsTable tbody tr:nth-last-child(2)").append("<td>" + minterms[i][j] + "</td>");
+              }
+          }
+        }
+      }
+
+      function listSteps(steps) {
+
+      }
 
 //Reverse input string to to account for A+1 and 1+A (both orders)
         // inputexp = inputexp.split("").reverse().join("");
