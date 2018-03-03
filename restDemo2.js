@@ -33,41 +33,173 @@ var server = app.listen(8042, function(){
 
 var simplifyFacade = new function(){
 
+  function BasicSimplifier(){
+  }
+
+  // Add methods like this.  All Person objects will be able to invoke this
+  BasicSimplifier.prototype.firstSimplification = function(inputexp){
+
+      inputexp = inputexp.replace(/\s/g, '');
+
+    //Reverse input string to to account for A+1 and 1+A (both orders)
+      inputexp = inputexp.split("").reverse().join("");
+      // inputexp = inputexp.replace("~~", "");
+      var inputexpStruct = simplify(inputexp);
+      inputexp = inputexpStruct.inputexp
+      inputexp = inputexp.split("").reverse().join("");
+      inputexpStruct = simplify(inputexp);
+      inputexp = inputexpStruct.inputexp
+
+      return {
+        inputexp : inputexp
+      }
+  };
+
+  function simplify(inputexp) {
+      do {
+        var matchFound = false;
+        var match = inputexp.match(/[a-z]\+[1]\s*?/i);
+        matchFound = matchFound || match != null;
+        if(match){
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1 + "+1", "1");
+        }
+        
+        match = inputexp.match(/[a-z]\+[0]\s*?/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1 + "+0", letter1);
+        }
+
+        match = inputexp.match(/[a-z]\.[1]\s*?/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1 + ".1", letter1);
+        }
+
+        match = inputexp.match(/[a-z]\.[0]\s*?/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1 + ".0", "0");
+        }
+
+        match = inputexp.match(/1\+1\s*?/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          inputexp = inputexp.replace("1+1", "1");
+        }
+
+        match = inputexp.match(/1\+0\s*?/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          inputexp = inputexp.replace("1+0", "1");
+        }
+
+        match = inputexp.match(/1\.1\s*?/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          inputexp = inputexp.replace("1.1", "1");
+        }
+
+        match = inputexp.match(/1\.0\s*?/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          inputexp = inputexp.replace("1.0", "0");
+        }
+
+        match = inputexp.match(/[a-z]0/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1+"0", "0");
+        }
+
+        match = inputexp.match(/~[a-z]/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(1);
+          inputexp = inputexp.replace("~"+letter1, "1");
+        }
+
+        match = inputexp.match(/~[A-Z]/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(1);
+          inputexp = inputexp.replace("~"+letter1, "1");
+        }
+
+        match = inputexp.match(/[A-Z]0/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1+"0", "0");
+        }
+
+        match = inputexp.match(/[a-z]1/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1+"1", "1");
+        }
+
+        match = inputexp.match(/[A-Z]1/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1+"1", "1");
+        }
+
+        match = inputexp.match(/[a-z]\.[a-z]\s*?/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(0);
+          var letter2 = match[0].charAt(2);
+          if(letter1 == letter2) {
+            inputexp = inputexp.replace(letter1 + "." + letter2, letter1);
+          }
+        }
+
+      } while(matchFound)
+
+      return {
+        inputexp: inputexp
+      }
+    }
+
+  function QuineMccluskeySimplifier(){
+  }
+
   this.simplifyExpression = function(expression){
 
     var finalMinTerms = []
     var finalUniqueChars = []
-    var finalSteps = []
+    var basicSimplifier = new BasicSimplifier();
+    var quineMccluskeySimplifier = new QuineMccluskeySimplifier();
 
-    // while(match) { 
-      // var innerExpression = match[match.length - 1].substring(1, match[match.length - 1].length -2);
-      var inputStruct = firstSimplification(expression); // Initial basic simplification
-      input = inputStruct.inputexp
-      var minTermStruct = extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
-      var minTerms = minTermStruct.minTerms;
-      var uniqueChars = minTermStruct.uniqueChars
-      var nonVariableTerms = minTermStruct.nonVariableTerms
-      var simplifiedTerms = find_prime_implicants(minTerms)
-      var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
-      for (var i = nonVariableTerms.length - 1; i >= 0; i--) {
-        if (simplifiedExpression.length != 0) {
-          simplifiedExpression += " + "
-        }
-        simplifiedExpression += nonVariableTerms[i]
+    var inputStruct = basicSimplifier.firstSimplification(expression) // Initial basic simplification
+    
+    input = inputStruct.inputexp
+    
+    var minTermStruct = quineMccluskeySimplifier.extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
+    var minTerms = minTermStruct.minTerms;
+    var uniqueChars = minTermStruct.uniqueChars
+    var nonVariableTerms = minTermStruct.nonVariableTerms
+    var simplifiedTerms = quineMccluskeySimplifier.find_prime_implicants(minTerms)
+    var simplifiedExpression = quineMccluskeySimplifier.makeExpression(simplifiedTerms, uniqueChars)
+    for (var i = nonVariableTerms.length - 1; i >= 0; i--) {
+      if (simplifiedExpression.length != 0) {
+        simplifiedExpression += " + "
       }
-      // expression.replace("(" + innerExpression + ")" , simplifiedExpression)
-      // match = expression.match("/(\(([^()]|(?R))*\))/i");
-      finalSteps.concat(inputStruct.steps)
-      finalUniqueChars.concat(uniqueChars)
-      finalMinTerms.concat(minTerms)
-    // }
-
-
-
+      simplifiedExpression += nonVariableTerms[i]
+    }
+    finalUniqueChars.concat(uniqueChars)
+    finalMinTerms.concat(minTerms)
     var output = {
       uniqueChars : uniqueChars,
       minTerms : minTerms,
-      steps : inputStruct.steps,
       simplifiedExpression : simplifiedExpression
 
     };
@@ -76,7 +208,7 @@ var simplifyFacade = new function(){
   }
 
 
-  var combine = function (m, n) {
+   var combine = function (m, n) {
         var a = m.length, c = '', count = 0, i;
         for (i = 0; i < a; i++) {
             if (m[i] === n[i]) {
@@ -101,7 +233,7 @@ var simplifyFacade = new function(){
         return accu;
     };
 
-    var find_prime_implicants = function(data) {
+    QuineMccluskeySimplifier.prototype.find_prime_implicants = function(data) {
         var newList = [].concat(data),
             size = newList.length,
             IM = [],
@@ -158,7 +290,7 @@ var simplifyFacade = new function(){
         return IM;
     }
 
-    function extractMinTerms(input) {
+    QuineMccluskeySimplifier.prototype.extractMinTerms = function(input) {
       var uniqueChars = unique_char(input);
       uniqueChars.sort();
       var tokens = input.split("+");
@@ -192,7 +324,7 @@ var simplifyFacade = new function(){
       }
     }
 
-    function makeExpression(simplifiedTerms, uniqueChars) {
+    QuineMccluskeySimplifier.prototype.makeExpression = function (simplifiedTerms, uniqueChars) {
       var terms = ""
       for(var x = 0; x < simplifiedTerms.length; x++) {
          var term = simplifiedTerms[x]
@@ -223,208 +355,5 @@ var simplifyFacade = new function(){
      }
      return uniql;
     }
-
-    function addIfDifferent(steps, input, oldInput) {
-      if(input.valueOf() != oldInput.valueOf()) {
-        steps.push(oldInput)
-        console.log(" ADD difference check "  + input + " " + oldInput + " while steps be at " + steps)
-      } else {
-        console.log(" DONT ADD difference check "  + input + " " + oldInput + " while steps be at " + steps)
-      }
-
-      return steps;
-    }
-
-    function firstSimplification(inputexp) {
-
-      inputexp = inputexp.replace(/\s/g, '');
-
-    //Reverse input string to to account for A+1 and 1+A (both orders)
-      inputexp = inputexp.split("").reverse().join("");
-      // inputexp = inputexp.replace("~~", "");
-      var inputexpStruct = simplify(inputexp);
-      inputexp = inputexpStruct.inputexp
-      var steps = inputexpStruct.steps
-      console.log("steps be ")
-      console.log(steps)
-      inputexp = inputexp.split("").reverse().join("");
-      inputexpStruct = simplify(inputexp);
-      inputexp = inputexpStruct.inputexp
-      steps.concat(inputexpStruct.steps)
-
-      console.log("steps be 2 ")
-      console.log(steps)
-
-      return {
-        inputexp : inputexp,
-        steps : steps
-      }
-    }
-
-    function simplify(inputexp) {
-      steps = []
-      var oldInputExp = inputexp
-      do {
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        var matchFound = false;
-        var match = inputexp.match(/[a-z]\+[1]\s*?/i);
-        matchFound = matchFound || match != null;
-        if(match){
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1 + "+1", "1");
-        }
-        
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-
-        match = inputexp.match(/[a-z]\+[0]\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1 + "+0", letter1);
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[a-z]\.[1]\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1 + ".1", letter1);
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[a-z]\.[0]\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1 + ".0", "0");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/1\+1\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          inputexp = inputexp.replace("1+1", "1");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/1\+0\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          inputexp = inputexp.replace("1+0", "1");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/1\.1\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          inputexp = inputexp.replace("1.1", "1");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/1\.0\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          inputexp = inputexp.replace("1.0", "0");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[a-z]0/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"0", "0");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/~[a-z]/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(1);
-          inputexp = inputexp.replace("~"+letter1, "1");
-        }
-
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/~[A-Z]/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(1);
-          inputexp = inputexp.replace("~"+letter1, "1");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[A-Z]0/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"0", "0");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[a-z]1/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"1", "1");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[A-Z]1/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"1", "1");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[a-z]\.[a-z]\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          var letter2 = match[0].charAt(2);
-          if(letter1 == letter2) {
-            inputexp = inputexp.replace(letter1 + "." + letter2, letter1);
-          }
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-      } while(matchFound)
-
-      return {
-        inputexp: inputexp,
-        steps: steps
-      }
-    }
+   
 }
