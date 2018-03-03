@@ -17,6 +17,23 @@ $(document).ready(function(){
         }
     });
     expressionProxy = {}
+
+    $("#historyBtn").click(function(){
+      console.log("history !" );
+       var request = $.ajax({
+          url: "/simplify/history",
+          type: "GET",
+          dataType: "json",
+          contentType: 'application/json; charset=utf-8'
+        }).done(function(data) {
+                console.log("history back !" );
+
+          listSteps(data.history);
+        }).fail(function( data ) {
+
+        });
+    });
+
     $("#simplifyBtn").click(function(){
       console.log('submit button pressed.');
       var inputexp = $("#expressionField").val();
@@ -67,13 +84,12 @@ $(document).ready(function(){
         }
       }
 
-      //Lists the simplification process of the expression
+    });
+  //Lists the simplification process of the expression
       function listSteps(steps) {
+        $(".list-group").html("");
         steps.forEach(function(step){
           $(".list-group").append("<li class='list-group-item' >" + step + "</li>");
         });
       }
-
-    });
-
 });

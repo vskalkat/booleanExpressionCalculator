@@ -12,13 +12,18 @@ app.get('/', (req, res) => { //anonymous function
   res.sendFile(__dirname + '/calculator.html');
 })
 
+var history = []
+
 app.post('/simplify/result', function (req, res) {
   var input = req.body.inputexp;
-
-  //res.send(JSON.stringify(simplifyFacade.simplifyExpression(input)));
   var contentToSend = simplifyFacade.simplifyExpression(input);
-  console.log("Send CONTENT: " + contentToSend.minTerms);
-  res.send(JSON.stringify(simplifyFacade.simplifyExpression(input)));
+  history.push(input + " : " + contentToSend.simplifiedExpression)
+  res.send(JSON.stringify(contentToSend));
+})
+
+app.get('/simplify/history', function (req, res) {
+  var historyStruct = { "history" : history};
+  res.send(JSON.stringify(historyStruct));
 })
 
 var server = app.listen(8042, function(){
@@ -29,7 +34,7 @@ var server = app.listen(8042, function(){
 var simplifyFacade = new function(){
 
   this.simplifyExpression = function(expression){
-    
+
     var finalMinTerms = []
     var finalUniqueChars = []
     var finalSteps = []
@@ -60,25 +65,16 @@ var simplifyFacade = new function(){
 
 
     var output = {
-      uniqueChars : finalUniqueChars,
-      minTerms : finalMinTerms,
-      steps : finalSteps,
-      simplifiedExpression : simplifiedExpression,
+      uniqueChars : uniqueChars,
+      minTerms : minTerms,
+      steps : inputStruct.steps,
+      simplifiedExpression : simplifiedExpression
 
     };
 
     return output;
   }
 
-  this.findSteps = function(expression){
-    input = firstSimplification(expression); // Initial basic simplification
-    var minTermStruct = extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
-    var minTerms = minTermStruct.minTerms;
-    var uniqueChars = minTermStruct.uniqueChars
-    var simplifiedTerms = find_prime_implicants(minTerms)
-    var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
-    return simplifiedExpression
-  }
 
   var combine = function (m, n) {
         var a = m.length, c = '', count = 0, i;
@@ -245,6 +241,7 @@ var simplifyFacade = new function(){
 
     //Reverse input string to to account for A+1 and 1+A (both orders)
       inputexp = inputexp.split("").reverse().join("");
+      // inputexp = inputexp.replace("~~", "");
       var inputexpStruct = simplify(inputexp);
       inputexp = inputexpStruct.inputexp
       var steps = inputexpStruct.steps
@@ -354,6 +351,27 @@ var simplifyFacade = new function(){
         if (match) {
           var letter1 = match[0].charAt(0);
           inputexp = inputexp.replace(letter1+"0", "0");
+        }
+
+        steps = addIfDifferent(steps, inputexp, oldInputExp);
+        oldInputExp = inputexp
+
+        match = inputexp.match(/~[a-z]/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(1);
+          inputexp = inputexp.replace("~"+letter1, "1");
+        }
+
+
+        steps = addIfDifferent(steps, inputexp, oldInputExp);
+        oldInputExp = inputexp
+
+        match = inputexp.match(/~[A-Z]/i);
+        matchFound = matchFound || match != null;
+        if (match) {
+          var letter1 = match[0].charAt(1);
+          inputexp = inputexp.replace("~"+letter1, "1");
         }
 
         steps = addIfDifferent(steps, inputexp, oldInputExp);
