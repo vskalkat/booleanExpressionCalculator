@@ -43,7 +43,23 @@ $(document).ready(function(){
             e.preventDefault();
         }
     });
-    expressionProxy = {}
+    
+    var ProxySingleton = (function(){
+      function ProxySingleton() {
+          //do stuff
+      }
+      var instance;
+      return {
+          getInstance: function(){
+              if (instance == null) {
+                  instance = new ProxySingleton();
+                  // Hide the constructor so the returned objected can't be new'd...
+                  instance.constructor = null;
+              }
+              return instance;
+          }
+     };
+   })();
 
     $("#historyBtn").click(function(){
       console.log("history !" );
@@ -66,8 +82,8 @@ $(document).ready(function(){
       var inputexp = $("#expressionField").val();
       inputexp = inputexp.replace(/\s/g, '');
 
-      if(inputexp in expressionProxy) {
-        var data = expressionProxy[inputexp]
+      if(inputexp in ProxySingleton.getInstance()) {
+        var data = ProxySingleton.getInstance()[inputexp]
         $("#output").html(data.simplifiedExpression);
         createMintermTable(data.minTerms, data.uniqueChars);
         listHistory(data.steps);
@@ -80,7 +96,7 @@ $(document).ready(function(){
           contentType: 'application/json; charset=utf-8',
           data: JSON.stringify({ inputexp : inputexp })
         }).done(function(data) {
-          expressionProxy[inputexp]= data
+          ProxySingleton.getInstance()[inputexp]= data
           $("#output").html(data.simplifiedExpression);
           createMintermTable(data.minTerms, data.uniqueChars);
           listHistory(data.steps);
