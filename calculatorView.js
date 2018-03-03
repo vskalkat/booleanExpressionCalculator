@@ -1,7 +1,7 @@
 $(document).ready(function(){
     $("#expressionField").keydown(function (e) {
         // Allow: backspace, delete, escape, ., +
-        if ($.inArray(e.keyCode, [46, 8, 27, 13, 190, 43, 187]) !== -1 ||
+        if ($.inArray(e.keyCode, [46, 8, 27, 13, 190, 43, 187, 57]) !== -1 ||
              // Allow: Ctrl+A, Command+A
             (e.keyCode >= 65 && e.keyCode <= 90) ||
             (e.keyCode >= 97 && e.keyCode <= 122) ||
@@ -10,30 +10,40 @@ $(document).ready(function(){
                  // let it happen, don't do anything
                  return;
         }
+        console.log("key code is " + e.keyCode)
         // Ensure that it is a number and stop the keypress
         if (e.keyCode >= 50 && e.keyCode <= 57) {
             e.preventDefault();
         }
     });
-
+    expressionProxy = {}
     $("#simplifyBtn").click(function(){
       console.log('submit button pressed.');
-
       var inputexp = $("#expressionField").val();
       inputexp = inputexp.replace(/\s/g, '');
 
-      var request = $.ajax({
-        url: "/simplify/result",
-        type: "POST",
-        dataType: "json",
-        contentType: 'application/json; charset=utf-8',
-        data: JSON.stringify({ inputexp : inputexp })
-      }).done(function(data) {
+      if(inputexp in expressionProxy) {
+        var data = expressionProxy[inputexp]
         $("#output").html(data.simplifiedExpression);
         createMintermTable(data.minTerms, data.uniqueChars);
-      }).fail(function( data ) {
+        listSteps(data.steps);
 
-      });
+      } else {
+        var request = $.ajax({
+          url: "/simplify/result",
+          type: "POST",
+          dataType: "json",
+          contentType: 'application/json; charset=utf-8',
+          data: JSON.stringify({ inputexp : inputexp })
+        }).done(function(data) {
+          expressionProxy[inputexp]= data
+          $("#output").html(data.simplifiedExpression);
+          createMintermTable(data.minTerms, data.uniqueChars);
+          listSteps(data.steps);
+        }).fail(function( data ) {
+
+        });
+      }
 
       function createMintermTable(minterms, chars) {
         $("#mindtermsTable thead tr").html("<th scope='col'></th>");
@@ -57,18 +67,13 @@ $(document).ready(function(){
         }
       }
 
+      //Lists the simplification process of the expression
       function listSteps(steps) {
-
+        steps.forEach(function(step){
+          $(".list-group").append("<li class='list-group-item' >" + step + "</li>");
+        });
       }
 
-//Reverse input string to to account for A+1 and 1+A (both orders)
-        // inputexp = inputexp.split("").reverse().join("");
-        // inputexp = simplify(inputexp);
-        //
-        // inputexp = inputexp.split("").reverse().join("");
-        // inputexp = simplify(inputexp);
-        //
-        // $("#output").html(inputexp);
     });
 
 });

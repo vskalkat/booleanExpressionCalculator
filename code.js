@@ -7,18 +7,68 @@ app.use(bodyParser.json());
 
 app.use("", express.static(__dirname + ""));
 
+
+var newCourse = {
+  "syde322":
+     {"name":"Software Design",
+         "description":"Software requirements specification; software architecture; design patterns; software testing and quality assurance; software maintenance; design of efficient algorithms and methods for their analysis, mathematical algorithms, string processing algorithms, geometrical algorithms, exhaustive search and traversal techniques, introduction to lower bound theory and NP-completeness. Case studies and engineering examples.",
+         "prereq":"CS 240 or ECE 250 or MTE 140 or SYDE 223 or Level at least 3B Systems Design Engineering.",
+         "antireq":""
+    }
+}
+
 app.get('/', (req, res) => { //anonymous function
   console.log("GET request received for root");
   res.sendFile(__dirname + '/calculator.html');
 })
 
+app.get('/courses', (req, res) => { //anonymous function
+  console.log("GET request received");
+  fs.readFile(__dirname + "/" + "courses.json", 'utf8', function(err, data){
+    if(err && err.code == "ENOENT") { // anonymous callback function
+      console.error("Invalid filename provided")
+      return;
+    }
+    res.end(data);
+  });
+})
+
+app.post('/courses', (req, res) => { // anonymous function
+  console.log("POST request received");
+  fs.readFile(__dirname + "/" + "courses.json", 'utf8', function (err, data) { // using function construct
+    if (err && err.code == "ENOENT") { // anonymous callback function
+      console.error("Invalid filename provided");
+      return;
+    }
+    try {
+      var courses = JSON.parse(data);
+      var newCourse = req.body;
+      courses = Object.assign(courses, newCourse);
+      res.end(JSON.stringify(courses));
+
+    } catch (err) {
+      res.status(400).json({ error: "Invalid service request" });
+      console.error("Invalid service request");
+      return;
+    }
+  });
+})
+
+
+app.get('simplify/steps', (req, res) => { //anonymous function
+  console.log("GET request received");
+  fs.readFile(__dirname + "/" + "courses.json", 'utf8', function(err, data){
+    if(err && err.code == "ENOENT") { // anonymous callback function
+      console.error("Invalid filename provided")
+      return;
+    }
+    res.end(data);
+  });
+})
+
 app.post('/simplify/result', function (req, res) {
   var input = req.body.inputexp;
-
-  //res.send(JSON.stringify(simplifyFacade.simplifyExpression(input)));
-  var contentToSend = simplifyFacade.simplifyExpression(input);
-  console.log("Send CONTENT: " + contentToSend.minTerms);
-  res.send(JSON.stringify(simplifyFacade.simplifyExpression(input)));
+  res.send(JSON.stringify(simplifyExpression(input)));
 })
 
 var server = app.listen(8042, function(){
@@ -26,60 +76,13 @@ var server = app.listen(8042, function(){
   console.log('Node.js server running at localhost:%s', port)
 })
 
+
 var simplifyFacade = new function(){
 
   this.simplifyExpression = function(expression){
-    
-    var finalMinTerms = []
-    var finalUniqueChars = []
-    var finalSteps = []
-
-    // while(match) { 
-      // var innerExpression = match[match.length - 1].substring(1, match[match.length - 1].length -2);
-      var inputStruct = firstSimplification(expression); // Initial basic simplification
-      input = inputStruct.inputexp
-      var minTermStruct = extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
-      var minTerms = minTermStruct.minTerms;
-      var uniqueChars = minTermStruct.uniqueChars
-      var nonVariableTerms = minTermStruct.nonVariableTerms
-      var simplifiedTerms = find_prime_implicants(minTerms)
-      var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
-      for (var i = nonVariableTerms.length - 1; i >= 0; i--) {
-        if (simplifiedExpression.length != 0) {
-          simplifiedExpression += " + "
-        }
-        simplifiedExpression += nonVariableTerms[i]
-      }
-      // expression.replace("(" + innerExpression + ")" , simplifiedExpression)
-      // match = expression.match("/(\(([^()]|(?R))*\))/i");
-      finalSteps.concat(inputStruct.steps)
-      finalUniqueChars.concat(uniqueChars)
-      finalMinTerms.concat(minTerms)
-    // }
-
-
-
-    var output = {
-      uniqueChars : finalUniqueChars,
-      minTerms : finalMinTerms,
-      steps : finalSteps,
-      simplifiedExpression : simplifiedExpression,
-
-    };
-
-    return output;
-  }
-
-  this.findSteps = function(expression){
-    input = firstSimplification(expression); // Initial basic simplification
-    var minTermStruct = extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
-    var minTerms = minTermStruct.minTerms;
-    var uniqueChars = minTermStruct.uniqueChars
-    var simplifiedTerms = find_prime_implicants(minTerms)
-    var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
-    return simplifiedExpression
-  }
-
+    return ""
+  } 
+  
   var combine = function (m, n) {
         var a = m.length, c = '', count = 0, i;
         for (i = 0; i < a; i++) {
@@ -162,14 +165,19 @@ var simplifyFacade = new function(){
         return IM;
     }
 
+    function simplifyExpression(input) {
+      input = firstSimplification(input);
+      // var minterms2 = ['0000', '0100', '1000', '0101', '1100', '0111', '1011', '1111'];
+
+      return JSON.stringify(extractMinTerms(input));
+    }
+
     function extractMinTerms(input) {
       var uniqueChars = unique_char(input);
       uniqueChars.sort();
+
       var tokens = input.split("+");
-
-      var nonVariableTerms = []
       var minTerms = [];
-
       for(var x = 0; x < tokens.length; x++) {
          var token = tokens[x];
          var minTerm = "";
@@ -182,18 +190,13 @@ var simplifyFacade = new function(){
             }
          }
          minTerms.push(minTerm);
-         if(minTerm.length == 0 && token.length != 0) {
-           nonVariableTerms.push(token)
-         }
       }
       console.log("min terms be");
       console.log(minTerms);
+      var simplifiedTerms = find_prime_implicants(minTerms)
+      var simplifiedExpression = makeExpression(simplifiedTerms, uniqueChars)
 
-      return {
-        minTerms: minTerms,
-        uniqueChars: uniqueChars,
-        nonVariableTerms: nonVariableTerms
-      }
+      return simplifiedExpression;
     }
 
     function makeExpression(simplifiedTerms, uniqueChars) {
@@ -209,7 +212,7 @@ var simplifyFacade = new function(){
             }
          }
          if(x != 0) {
-          terms += "+"
+          terms += "+" 
          }
 
          terms += convertedTerm
@@ -228,49 +231,23 @@ var simplifyFacade = new function(){
      return uniql;
     }
 
-    function addIfDifferent(steps, input, oldInput) {
-      if(input.valueOf() != oldInput.valueOf()) {
-        steps.push(oldInput)
-        console.log(" ADD difference check "  + input + " " + oldInput + " while steps be at " + steps)
-      } else {
-        console.log(" DONT ADD difference check "  + input + " " + oldInput + " while steps be at " + steps)
-      }
-
-      return steps;
-    }
-
     function firstSimplification(inputexp) {
 
       inputexp = inputexp.replace(/\s/g, '');
 
     //Reverse input string to to account for A+1 and 1+A (both orders)
       inputexp = inputexp.split("").reverse().join("");
-      var inputexpStruct = simplify(inputexp);
-      inputexp = inputexpStruct.inputexp
-      var steps = inputexpStruct.steps
-      console.log("steps be ")
-      console.log(steps)
+      inputexp = simplify(inputexp);
+
       inputexp = inputexp.split("").reverse().join("");
-      inputexpStruct = simplify(inputexp);
-      inputexp = inputexpStruct.inputexp
-      steps.concat(inputexpStruct.steps)
-
-      console.log("steps be 2 ")
-      console.log(steps)
-
-      return {
-        inputexp : inputexp,
-        steps : steps
-      }
+      inputexp = simplify(inputexp);
+      return inputexp
     }
 
     function simplify(inputexp) {
-      steps = []
-      var oldInputExp = inputexp
-      do {
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
 
+      do {
+        console.log("input express is " + inputexp)
         var matchFound = false;
         var match = inputexp.match(/[a-z]\+[1]\s*?/i);
         matchFound = matchFound || match != null;
@@ -278,10 +255,6 @@ var simplifyFacade = new function(){
           var letter1 = match[0].charAt(0);
           inputexp = inputexp.replace(letter1 + "+1", "1");
         }
-        
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
 
         match = inputexp.match(/[a-z]\+[0]\s*?/i);
         matchFound = matchFound || match != null;
@@ -290,18 +263,12 @@ var simplifyFacade = new function(){
           inputexp = inputexp.replace(letter1 + "+0", letter1);
         }
 
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
         match = inputexp.match(/[a-z]\.[1]\s*?/i);
         matchFound = matchFound || match != null;
         if (match) {
           var letter1 = match[0].charAt(0);
           inputexp = inputexp.replace(letter1 + ".1", letter1);
         }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
 
         match = inputexp.match(/[a-z]\.[0]\s*?/i);
         matchFound = matchFound || match != null;
@@ -310,17 +277,11 @@ var simplifyFacade = new function(){
           inputexp = inputexp.replace(letter1 + ".0", "0");
         }
 
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
         match = inputexp.match(/1\+1\s*?/i);
         matchFound = matchFound || match != null;
         if (match) {
           inputexp = inputexp.replace("1+1", "1");
         }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
 
         match = inputexp.match(/1\+0\s*?/i);
         matchFound = matchFound || match != null;
@@ -328,17 +289,11 @@ var simplifyFacade = new function(){
           inputexp = inputexp.replace("1+0", "1");
         }
 
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
         match = inputexp.match(/1\.1\s*?/i);
         matchFound = matchFound || match != null;
         if (match) {
           inputexp = inputexp.replace("1.1", "1");
         }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
 
         match = inputexp.match(/1\.0\s*?/i);
         matchFound = matchFound || match != null;
@@ -346,67 +301,18 @@ var simplifyFacade = new function(){
           inputexp = inputexp.replace("1.0", "0");
         }
 
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[a-z]0/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"0", "0");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[A-Z]0/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"0", "0");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[a-z]1/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"1", "1");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
-        match = inputexp.match(/[A-Z]1/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"1", "1");
-        }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
         match = inputexp.match(/[a-z]\.[a-z]\s*?/i);
         matchFound = matchFound || match != null;
         if (match) {
-          var letter1 = match[0].charAt(0);
-          var letter2 = match[0].charAt(2);
+          var letter1 = inputexp.charAt(0);
+          var letter2 = inputexp.charAt(2);
           if(letter1 == letter2) {
             inputexp = inputexp.replace(letter1 + "." + letter2, letter1);
           }
         }
-
-        steps = addIfDifferent(steps, inputexp, oldInputExp);
-        oldInputExp = inputexp
-
       } while(matchFound)
 
-      return {
-        inputexp: inputexp,
-        steps: steps
-      }
+      return inputexp;
     }
-}
+} 
+
