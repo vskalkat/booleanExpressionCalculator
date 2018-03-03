@@ -1,4 +1,31 @@
 $(document).ready(function(){
+    
+    var Iterator = function(arr){ return {
+        index : -1,
+        hasNext : function(){ return this.index <= arr.length; },
+        hasPrevious: function(){ return this.index > 0; },
+
+        current: function(){ return arr[ this["index"] ]; },
+
+        next : function(){
+            if(this.hasNext()){
+                this.index = this.index + 1;            
+                return this.current();
+            } 
+            return false;
+        },
+
+        previous : function(){
+            if(this.hasPrevious()){
+                this.index = this.index - 1
+                return this.current();
+            }
+            return false;
+        }
+      }   
+    };
+
+
     $("#expressionField").keydown(function (e) {
         // Allow: backspace, delete, escape, ., +
         if ($.inArray(e.keyCode, [46, 8, 27, 13, 190, 43, 187, 57]) !== -1 ||
@@ -28,7 +55,7 @@ $(document).ready(function(){
         }).done(function(data) {
                 console.log("history back !" );
 
-          listSteps(data.history);
+          listHistory(data.history);
         }).fail(function( data ) {
 
         });
@@ -43,7 +70,7 @@ $(document).ready(function(){
         var data = expressionProxy[inputexp]
         $("#output").html(data.simplifiedExpression);
         createMintermTable(data.minTerms, data.uniqueChars);
-        listSteps(data.steps);
+        listHistory(data.steps);
 
       } else {
         var request = $.ajax({
@@ -56,7 +83,7 @@ $(document).ready(function(){
           expressionProxy[inputexp]= data
           $("#output").html(data.simplifiedExpression);
           createMintermTable(data.minTerms, data.uniqueChars);
-          listSteps(data.steps);
+          listHistory(data.steps);
         }).fail(function( data ) {
 
         });
@@ -86,10 +113,15 @@ $(document).ready(function(){
 
     });
   //Lists the simplification process of the expression
-      function listSteps(steps) {
-        $(".list-group").html("");
-        steps.forEach(function(step){
-          $(".list-group").append("<li class='list-group-item' >" + step + "</li>");
-        });
+    function listHistory(steps) {
+      $(".list-group").html("");
+
+      var iter = Iterator(steps);
+      while(iter.hasNext()){
+          var item = iter.next();
+          if(item && item.length > 0) {
+            $(".list-group").append("<li class='list-group-item' >" + item + "</li>");
+          }
       }
+    }
 });
