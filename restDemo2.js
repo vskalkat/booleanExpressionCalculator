@@ -3,6 +3,19 @@ var bodyParser = require('body-parser');
 var fs = require('fs');
 
 var app = express();
+
+var mysql      = require('mysql');
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : 'pakistan',
+  database : 'my_db'
+});
+
+
+createSchema(connection);
+
+
 app.use(bodyParser.json());
 
 app.use("", express.static(__dirname + ""));
@@ -14,12 +27,53 @@ app.get('/', (req, res) => { //anonymous function
 
 var history = []
 
+
 app.post('/simplify/result', function (req, res) {
   var input = req.body.inputexp;
   var contentToSend = simplifyFacade.simplifyExpression(input);
   history.push(input + " : " + contentToSend.simplifiedExpression)
+
+  insertExpression(input, contentToSend.simplifiedExpressio, connection);
+
   res.send(JSON.stringify(contentToSend));
 })
+
+
+function insertExpression(input, simplified, con) {
+    var sql = "INSERT INTO expressions (user_email, input_exp, simplified_exp) VALUES ('banchot@hotmail.com', '" + input + "','" + simplified + "');";
+    connection.query(sql, function (err, result) {
+      if (err) throw err;
+      console.log("Expression added");
+    });
+}
+
+function createDefaultUsers(connection) {
+    var sql = "INSERT INTO users (email, password, is_premium) VALUES ('banchot@hotmail.com', 'asshole', true);";
+    connection.query(sql, function (err, result) {
+      console.log("Banchot added");
+    });
+}
+
+function createSchema(con) {
+      con.query("CREATE DATABASE IF NOT EXISTS my_db", function (err, result) {
+        if (err) throw err;
+        console.log("Database created");
+      });
+
+      var sql = "CREATE TABLE IF NOT EXISTS  users (email VARCHAR(255) PRIMARY KEY, password VARCHAR(255), is_premium BOOLEAN)";
+      con.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log("User Table created");
+      });
+
+      sql = "CREATE TABLE IF NOT EXISTS  expressions (user_email VARCHAR(255) PRIMARY KEY, input_exp VARCHAR(255), simplified_exp VARCHAR(255))";
+      con.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log("Expression Table created");
+      });
+
+      createDefaultUsers(con);
+}
 
 app.get('/simplify/history', function (req, res) {
   var historyStruct = { "history" : history};
