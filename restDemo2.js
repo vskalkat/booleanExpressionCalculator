@@ -162,6 +162,32 @@ var simplifyFacade = new function(){
           }
         }
 
+        inputexp = inputexp.replace("(a)", "a");
+        inputexp = inputexp.replace("(b)", "b");
+        inputexp = inputexp.replace("(c)", "c");
+        inputexp = inputexp.replace("(d)", "d");
+        inputexp = inputexp.replace("(e)", "e");
+        inputexp = inputexp.replace("(f)", "f");
+        inputexp = inputexp.replace("(g)", "g");
+        inputexp = inputexp.replace("(h)", "h");
+        inputexp = inputexp.replace("(i)", "i");
+        inputexp = inputexp.replace("(j)", "j");
+        inputexp = inputexp.replace("(k)", "k");
+        inputexp = inputexp.replace("(l)", "l");
+        inputexp = inputexp.replace("(m)", "m");
+        inputexp = inputexp.replace("(n)", "n");
+        inputexp = inputexp.replace("(o)", "o");
+        inputexp = inputexp.replace("(p)", "p");
+        inputexp = inputexp.replace("(q)", "q");
+        inputexp = inputexp.replace("(r)", "r");
+        inputexp = inputexp.replace("(s)", "s");
+        inputexp = inputexp.replace("(t)", "t");
+        inputexp = inputexp.replace("(u)", "u");
+        inputexp = inputexp.replace("(v)", "v");
+        inputexp = inputexp.replace("(x)", "x");
+        inputexp = inputexp.replace("(y)", "y");
+        inputexp = inputexp.replace("(z)", "z");
+
       } while(matchFound)
 
       return {
@@ -233,6 +259,7 @@ var simplifyFacade = new function(){
         return accu;
     };
 
+    //https://stackoverflow.com/questions/7537125/quine-mccluskey-algorithm-in-python
     QuineMccluskeySimplifier.prototype.find_prime_implicants = function(data) {
         var newList = [].concat(data),
             size = newList.length,
@@ -283,7 +310,7 @@ var simplifyFacade = new function(){
         }
 
         if (m !== size && size !== 1) {
-            IM = IM.concat(find_prime_implicants(im2));
+            IM = IM.concat(this.find_prime_implicants(im2));
         }
 
         IM.sort();
