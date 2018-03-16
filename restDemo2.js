@@ -30,27 +30,51 @@ var history = []
 
 app.post('/simplify/result', function (req, res) {
   var input = req.body.inputexp;
-  var contentToSend = simplifyFacade.simplifyExpression(input);
-  history.push(input + " : " + contentToSend.simplifiedExpression)
+  retrieveExpression(input, connection, function(result) {
+      if(result && result.length > 0) {
+          res.send(result[0]['steps']);
+      } 
+      else {
+          var contentToSend = simplifyFacade.simplifyExpression(input);
+          history.push(input + " : " + contentToSend.simplifiedExpression)
 
-  insertExpression(input, contentToSend.simplifiedExpressio, connection);
+          insertExpression(input, contentToSend.simplifiedExpression, JSON.stringify(contentToSend), connection);
 
-  res.send(JSON.stringify(contentToSend));
+          res.send(JSON.stringify(contentToSend));
+      }
+  });
+
 })
 
 
-function insertExpression(input, simplified, con) {
-    var sql = "INSERT INTO expressions (user_email, input_exp, simplified_exp) VALUES ('banchot@hotmail.com', '" + input + "','" + simplified + "');";
+function insertExpression(input, simplified, steps, con) {
+    var sql = "INSERT INTO expressions (user_email, input_exp, simplified_exp, steps) VALUES ('banchot@hotmail.com', '" + input + "','" + simplified + "', '" + steps + "');";
     connection.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log("Expression added");
+      console.log("Expression added " + result + " with err " + err);
+    });
+}
+
+function retrieveExpression(input, con, listener) {
+    var sql = "SELECT * FROM expressions WHERE input_exp = '" + input + "'";
+    connection.query(sql, function (err, result) {
+
+      if(err) {
+        listener(false);
+        console.log("errored out " + err);
+        return;
+      } else {
+         listener(result);
+         console.log("Expression retrieved " + result + " with err " + err + " where query was " + sql);
+      }
+
+
     });
 }
 
 function createDefaultUsers(connection) {
     var sql = "INSERT INTO users (email, password, is_premium) VALUES ('banchot@hotmail.com', 'asshole', true);";
     connection.query(sql, function (err, result) {
-      console.log("Banchot added");
+      console.log("Banchot added " + result);
     });
 }
 
@@ -66,7 +90,7 @@ function createSchema(con) {
         console.log("User Table created");
       });
 
-      sql = "CREATE TABLE IF NOT EXISTS  expressions (user_email VARCHAR(255) PRIMARY KEY, input_exp VARCHAR(255), simplified_exp VARCHAR(255))";
+      sql = "CREATE TABLE IF NOT EXISTS  expressions (id INT PRIMARY KEY AUTO_INCREMENT, user_email VARCHAR(255), input_exp VARCHAR(255) UNIQUE, simplified_exp VARCHAR(255), steps VARCHAR(255))";
       con.query(sql, function (err, result) {
         if (err) throw err;
         console.log("Expression Table created");
