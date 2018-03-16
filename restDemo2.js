@@ -5,11 +5,11 @@ var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 
 var app = express();
 var bcrypt = require('bcrypt');
-var mysql      = require('mysql');
+var mysql = require('mysql');
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : 'pakistan',
+  password : 'pass',
   database : 'my_db'
 });
 
@@ -27,7 +27,7 @@ app.get('/', (req, res) => { //anonymous function
 })
 
 app.get('/calculator', (req, res) => { //anonymous function
-  console.log("GET request received for root");
+  console.log("GET request received for calculator page");
   res.sendFile(__dirname + '/calculator.html');
 })
 
@@ -42,7 +42,7 @@ app.post('/simplify/result', function (req, res) {
   retrieveExpression(input, connection, function(result) {
       if(result && result.length > 0) {
           res.send(result[0]['steps']);
-      } 
+      }
       else {
           var contentToSend = simplifyFacade.simplifyExpression(input);
           history.push(input + " : " + contentToSend.simplifiedExpression)
@@ -127,7 +127,10 @@ app.get('/login', function (req, res) {
 
   if (validateCredentials(username, password)){
     const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '30'});
-    res.send(JSON.stringify({"token" : token}));
+    var contentToSend = {
+      "token" : token
+    };
+    res.send(JSON.stringify(contentToSend));
   } else {
     var contentToSend = {"message" : "token failed."};
     res.send(JSON.stringify(contentToSend));

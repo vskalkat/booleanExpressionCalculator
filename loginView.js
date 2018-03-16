@@ -1,5 +1,9 @@
 $(document).ready(function(){
 
+  if(document.cookie){
+      window.location.href = 'http://localhost:8042/calculator';
+  }
+
   $("#loginBtn").click(function(){
     console.log("login button clicked!" );
 
@@ -20,11 +24,11 @@ $(document).ready(function(){
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({ userCredentials : userCredentials })
       }).done(function(data) {
-            console.log("login responsed!" );
-            var token = data.token;
-            console.log("Token: " + data.token);
+            document.cookie = data.token;
+            window.location.href = 'http://localhost:8042/calculator';
       }).fail(function( data ) {
       });
+
   });
 
 });
