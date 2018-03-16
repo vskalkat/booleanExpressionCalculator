@@ -4,6 +4,7 @@
   "description": "1) run \"node restDemo2.js\" 2) visit http://localhost:8042/",
   "main": "calculatorView.js",
   "dependencies": {
+    "bcrypt": "^1.0.3",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "fs": "^0.0.1-security",

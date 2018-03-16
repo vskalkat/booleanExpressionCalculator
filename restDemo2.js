@@ -3,7 +3,7 @@ var bodyParser = require('body-parser');
 var fs = require('fs');
 
 var app = express();
-
+var bcrypt = require('bcrypt');
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
   host     : 'localhost',
@@ -26,6 +26,9 @@ app.get('/', (req, res) => { //anonymous function
 })
 
 var history = []
+
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 
 app.post('/simplify/result', function (req, res) {
