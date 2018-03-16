@@ -1,0 +1,28 @@
+{
+  "name": "booleanExpressionCalculator",
+  "version": "1.0.0",
+  "description": "1) run \"node restDemo2.js\" 2) visit http://localhost:8042/",
+  "main": "calculatorView.js",
+  "dependencies": {
+    "bcrypt": "^1.0.3",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "fs": "^0.0.1-security",
+    "mysql": "^2.15.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vskalkat/booleanExpressionCalculator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vskalkat/booleanExpressionCalculator/issues"
+  },
+  "homepage": "https://github.com/vskalkat/booleanExpressionCalculator#readme"
+}
