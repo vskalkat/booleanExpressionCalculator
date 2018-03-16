@@ -126,7 +126,7 @@ app.get('/login', function (req, res) {
     };
 
   if (validateCredentials(username, password)){
-    const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '30'});
+    const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '5'});
     var contentToSend = {
       "token" : token
     };
