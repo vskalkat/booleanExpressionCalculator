@@ -1,6 +1,24 @@
 $(document).ready(function(){
-  var myToken = document.cookie;
-    alert("token: " + myToken);
+
+//Perform token verification to permit or block feature access
+    var myToken = document.cookie;
+
+    var request = $.ajax({
+       url: "/protected",
+       type: "GET",
+       headers: {"Authorization": myToken}
+     }).done(function(data) {
+       console.log("tokenVerified: " + data.tokenVerified);
+     }).fail(function( data ) {
+       console.log("tokenVerified: " + data.tokenVerified);
+       if(!data.tokenVerified) {
+         alert("Token expired. Please log in again.");
+         window.location.href = 'http://localhost:8042/';
+       }
+     });
+
+
+
     var Iterator = function(arr){ return {
         index : -1,
         hasNext : function(){ return this.index <= arr.length; },

@@ -126,7 +126,7 @@ app.get('/login', function (req, res) {
     };
 
   if (validateCredentials(username, password)){
-    const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '5'});
+    const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '60000'});
     var contentToSend = {
       "token" : token
     };
@@ -139,19 +139,24 @@ app.get('/login', function (req, res) {
 
 //do stuff that requires authentication privlidges here
 app.get('/protected', ensureToken, function(req, res){
-  jwt.verify(req.token, 'my_secret_key', function(err, data){
+  var tokenVerified = false;
+  jwt.verify(req.headers["authorization"], 'my_secret_key', function(err, data){
     if(err){
+      console.log("Error in token verification:" + err);
+      tokenVerified = false;
       res.sendStatus(403);
     } else {
+      console.log('token verification: SUCCESS.');
+      tokenVerified = true;
       res.json({
-        text: "this is protected",
-        data: data
+        tokenVerified : tokenVerified
       });
     }
   })
 })
 
 function ensureToken(req, res, next){
+  console.log("ensuring token...");
   const bearerHeader = req.headers["authorization"];
   if(typeof bearerHeader !== 'undefined') {
     const bearer = bearerHeader.split(" ");
