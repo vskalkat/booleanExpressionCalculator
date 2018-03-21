@@ -136,105 +136,119 @@ var simplifyFacade = new function(){
       }
   };
 
+  function regexSimplify(inputexp, matchReg, replaceLetterSt, replacementStr) {
+      var match = inputexp.match(matchReg);
+      if(match){
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1 + replaceLetterSt, replacementStr);
+          return inputexp;
+      }
+        
+      return false
+  }
+
+  function regexSimplifyReversed(inputexp, matchReg, replaceLetterSt, replacementStr) {
+      var match = inputexp.match(matchReg);
+      if(match){
+          var letter1 = match[0].charAt(1);
+          inputexp = inputexp.replace(replaceLetterSt + letter1, replacementStr);
+          return inputexp;
+      }
+        
+      return false
+  }
+
+  function regexSimplifyLetterReplace(inputexp, matchReg, replaceLetterSt) {
+      var match = inputexp.match(matchReg);
+      if(match){
+          var letter1 = match[0].charAt(0);
+          inputexp = inputexp.replace(letter1 + replaceLetterSt, letter1);
+          return inputexp;
+      }
+        
+      return false
+  }
+
+
+
   function simplify(inputexp) {
       do {
-        var matchFound = false;
-        var match = inputexp.match(/[a-z]\+[1]\s*?/i);
-        matchFound = matchFound || match != null;
-        if(match){
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1 + "+1", "1");
-        }
-        
-        match = inputexp.match(/[a-z]\+[0]\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1 + "+0", letter1);
+        var initialInput = inputexp;
+       
+        var nextSimplification = regexSimplify(inputexp, /[a-z]\+[1]\s*?/i, "+1", "1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/[a-z]\.[1]\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1 + ".1", letter1);
+        nextSimplification = regexSimplifyLetterReplace(inputexp, /[a-z]\+[0]\s*?/i, "+0");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/[a-z]\.[0]\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1 + ".0", "0");
+        nextSimplification = regexSimplifyLetterReplace(inputexp, /[a-z]\.[1]\s*?/i,  ".1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/1\+1\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          inputexp = inputexp.replace("1+1", "1");
+        nextSimplification = regexSimplify(inputexp, /[a-z]\.[0]\s*?/i, ".0", "0");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/1\+0\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          inputexp = inputexp.replace("1+0", "1");
+        nextSimplification = regexSimplify(inputexp, /1\+1\s*?/i, "1+1", "1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/1\.1\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          inputexp = inputexp.replace("1.1", "1");
+        nextSimplification = regexSimplify(inputexp, /1\+0\s*?/i, "1+0", "1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/1\.0\s*?/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          inputexp = inputexp.replace("1.0", "0");
+
+        nextSimplification = regexSimplify(inputexp, /1\.1\s*?/i, "1.1", "1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/[a-z]0/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"0", "0");
+        nextSimplification = regexSimplify(inputexp, /1\.0\s*?/i, "1.0", "0");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/~[a-z]/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(1);
-          inputexp = inputexp.replace("~"+letter1, "1");
+
+        nextSimplification = regexSimplify(inputexp, /[a-z]0/i, "0", "0");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/~[A-Z]/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(1);
-          inputexp = inputexp.replace("~"+letter1, "1");
+        nextSimplification = regexSimplify(inputexp, /~[a-z]/i, "~", "1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/[A-Z]0/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"0", "0");
+        nextSimplification = regexSimplify(inputexp, /~[A-Z]/i, "~", "1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/[a-z]1/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"1", "1");
+        nextSimplification = regexSimplify(inputexp, /[A-Z]0/i, "0", "0");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
 
-        match = inputexp.match(/[A-Z]1/i);
-        matchFound = matchFound || match != null;
-        if (match) {
-          var letter1 = match[0].charAt(0);
-          inputexp = inputexp.replace(letter1+"1", "1");
+        nextSimplification = regexSimplify(inputexp, /[a-z]1/i, "1", "1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
         }
+
+        nextSimplification = regexSimplify(inputexp, /[A-Z]1/i, "1", "1");
+        if(nextSimplification) {
+          inputexp = nextSimplification;
+        }
+
 
         match = inputexp.match(/[a-z]\.[a-z]\s*?/i);
-        matchFound = matchFound || match != null;
         if (match) {
           var letter1 = match[0].charAt(0);
           var letter2 = match[0].charAt(2);
@@ -269,7 +283,7 @@ var simplifyFacade = new function(){
         inputexp = inputexp.replace("(y)", "y");
         inputexp = inputexp.replace("(z)", "z");
 
-      } while(matchFound)
+      } while(initialInput.length != inputexp.length)
 
       return {
         inputexp: inputexp
