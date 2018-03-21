@@ -1,14 +1,15 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var fs = require('fs');
+var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 
 var app = express();
 var bcrypt = require('bcrypt');
-var mysql      = require('mysql');
+var mysql = require('mysql');
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : 'pakistan',
+  password : 'pass',
   database : 'my_db'
 });
 
@@ -22,6 +23,11 @@ app.use("", express.static(__dirname + ""));
 
 app.get('/', (req, res) => { //anonymous function
   console.log("GET request received for root");
+  res.sendFile(__dirname + '/loginView.html');
+})
+
+app.get('/calculator', (req, res) => { //anonymous function
+  console.log("GET request received for calculator page");
   res.sendFile(__dirname + '/calculator.html');
 })
 
@@ -36,7 +42,7 @@ app.post('/simplify/result', function (req, res) {
   retrieveExpression(input, connection, function(result) {
       if(result && result.length > 0) {
           res.send(result[0]['steps']);
-      } 
+      }
       else {
           var contentToSend = simplifyFacade.simplifyExpression(input);
           history.push(input + " : " + contentToSend.simplifiedExpression)
@@ -107,10 +113,94 @@ app.get('/simplify/history', function (req, res) {
   res.send(JSON.stringify(historyStruct));
 })
 
+
+app.get('/login', function (req, res) {
+  console.log("Login POST request hit!");
+  var username = req.body.username;
+  var password = req.body.password;
+
+    var mockUser = {
+      id: 1,
+      name: username,
+      pass: password
+    };
+
+  if (validateCredentials(username, password)){
+    const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '60000'});
+    var contentToSend = {
+      "token" : token
+    };
+    res.send(JSON.stringify(contentToSend));
+  } else {
+    var contentToSend = {"message" : "token failed."};
+    res.send(JSON.stringify(contentToSend));
+  }
+})
+
+//do stuff that requires authentication privlidges here
+app.get('/protected', ensureToken, function(req, res){
+  var tokenVerified = false;
+  jwt.verify(req.headers["authorization"], 'my_secret_key', function(err, data){
+    if(err){
+      console.log("Error in token verification:" + err);
+      tokenVerified = false;
+      res.sendStatus(403);
+    } else {
+      console.log('token verification: SUCCESS.');
+      tokenVerified = true;
+      res.json({
+        tokenVerified : tokenVerified
+      });
+    }
+  })
+})
+
+function ensureToken(req, res, next){
+  console.log("ensuring token...");
+  const bearerHeader = req.headers["authorization"];
+  if(typeof bearerHeader !== 'undefined') {
+    const bearer = bearerHeader.split(" ");
+    const bearerToken = bearer[1];
+    req.token = bearerToken;
+    next();
+  } else {
+    res.sendStatus(403);
+  }
+}
+
+app.post('/signUp', function (req, res) {
+  console.log("SignUp POST request hit!");
+  var username = req.body.username;
+  var password = req.body.password;
+  var isPremiumRegistration = req.body.isPremiumRegistration;
+
+  //check WATIAM API to make sure it is waterloo email
+  var isWaterlooEmail = true;
+
+  if (isWaterlooEmail){
+    //add new user to database
+  } else {
+    var contentToSend = {"message" : "Cannot create account."};
+    res.send(JSON.stringify(contentToSend));
+  }
+})
+
+
+
+
+
 var server = app.listen(8042, function(){
   var port = server.address().port
   console.log('Node.js server running at localhost:%s', port)
 })
+
+function validateCredentials(user, pass){
+  var isValidUser = true;
+
+  //check to see if username and password exist in databade
+
+  return isValidUser;
+}
 
 var simplifyFacade = new function(){
 
@@ -301,9 +391,9 @@ var simplifyFacade = new function(){
     var quineMccluskeySimplifier = new QuineMccluskeySimplifier();
 
     var inputStruct = basicSimplifier.firstSimplification(expression) // Initial basic simplification
-    
+
     input = inputStruct.inputexp
-    
+
     var minTermStruct = quineMccluskeySimplifier.extractMinTerms(input);  // Simplifies using Quine Mccluskey algorithm
     var minTerms = minTermStruct.minTerms;
     var uniqueChars = minTermStruct.uniqueChars
@@ -477,5 +567,5 @@ var simplifyFacade = new function(){
      }
      return uniql;
     }
-   
+
 }

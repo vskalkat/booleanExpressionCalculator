@@ -1,5 +1,24 @@
 $(document).ready(function(){
-    
+
+//Perform token verification to permit or block feature access
+    var myToken = document.cookie;
+
+    var request = $.ajax({
+       url: "/protected",
+       type: "GET",
+       headers: {"Authorization": myToken}
+     }).done(function(data) {
+       console.log("tokenVerified: " + data.tokenVerified);
+     }).fail(function( data ) {
+       console.log("tokenVerified: " + data.tokenVerified);
+       if(!data.tokenVerified) {
+         alert("Token expired. Please log in again.");
+         window.location.href = 'http://localhost:8042/';
+       }
+     });
+
+
+
     var Iterator = function(arr){ return {
         index : -1,
         hasNext : function(){ return this.index <= arr.length; },
@@ -9,9 +28,9 @@ $(document).ready(function(){
 
         next : function(){
             if(this.hasNext()){
-                this.index = this.index + 1;            
+                this.index = this.index + 1;
                 return this.current();
-            } 
+            }
             return false;
         },
 
@@ -22,7 +41,7 @@ $(document).ready(function(){
             }
             return false;
         }
-      }   
+      }
     };
 
 
@@ -43,7 +62,7 @@ $(document).ready(function(){
             e.preventDefault();
         }
     });
-    
+
     var ProxySingleton = (function(){
       function ProxySingleton() {
       }
@@ -138,4 +157,17 @@ $(document).ready(function(){
           }
       }
     }
+
+    $("#logoutBtn").click(function(){
+      console.log('logout button clicked.');
+      if(document.cookie){
+        console.log("document cookie before: " + document.cookie);
+        document.cookie = " ";
+
+        console.log("document cookie after: " + document.cookie);
+      }
+        window.location.href = 'http://localhost:8042/';
+    })
+
+
 });

@@ -57,6 +57,9 @@ header.inputSection h1 {
   padding-bottom: 2rem;
 }
 
+.btn-secondary{
+  opacity: 0.5;
+}
 
 @media (min-width: 768px) {
   header.inputSection h1 {
