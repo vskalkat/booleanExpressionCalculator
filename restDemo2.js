@@ -9,7 +9,7 @@ var mysql = require('mysql');
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : 'pass',
+  password : 'pakistan',
   database : 'my_db'
 });
 
@@ -119,11 +119,11 @@ app.get('/login', function (req, res) {
   var username = req.body.username;
   var password = req.body.password;
 
-    var mockUser = {
-      id: 1,
-      name: username,
-      pass: password
-    };
+  var mockUser = {
+    id: 1,
+    name: username,
+    pass: password
+  };
 
   if (validateCredentials(username, password)){
     const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '60000'});
@@ -169,25 +169,34 @@ function ensureToken(req, res, next){
 }
 
 app.post('/signUp', function (req, res) {
-  console.log("SignUp POST request hit!");
-  var username = req.body.username;
-  var password = req.body.password;
-  var isPremiumRegistration = req.body.isPremiumRegistration;
+  var email = req.body.userCredentials.email;
+  var password = req.body.userCredentials.password;
+  var isPremiumRegistration = req.body.userCredentials.isPremiumRegistration;
 
-  //check WATIAM API to make sure it is waterloo email
-  var isWaterlooEmail = true;
+  var mockUser = {
+    id: 1,
+    name: username,
+    pass: password
+  };
 
-  if (isWaterlooEmail){
+  if (isValidEmail(email)){
+    const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '60000'});
+    var contentToSend = {
+      "token" : token
+    };
+    res.send(JSON.stringify(contentToSend)); // this is a 200
+    console.log("SignUp POST request hit! 1 success nigga");
+
     //add new user to database
   } else {
-    var contentToSend = {"message" : "Cannot create account."};
-    res.send(JSON.stringify(contentToSend));
+    res.sendStatus(403);
   }
 })
 
 
-
-
+function isValidEmail(email){
+  return (email && email.length > 0);
+}
 
 var server = app.listen(8042, function(){
   var port = server.address().port
