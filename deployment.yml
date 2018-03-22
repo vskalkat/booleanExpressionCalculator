@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: annex-project-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:  
+        app: annex-project  
+    spec:     # pod spec                  
+      containers: 
+      - name: annex-project
+        image: gcr.io/crafty-key-198523/fydp:v1 # image we pushed
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 3000

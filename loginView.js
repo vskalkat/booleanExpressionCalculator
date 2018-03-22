@@ -19,7 +19,7 @@ $(document).ready(function(){
 
      var request = $.ajax({
         url: "/login",
-        type: "GET",
+        type: "POST",
         dataType: "json",
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({ userCredentials : userCredentials })
@@ -36,6 +36,7 @@ $(document).ready(function(){
                  window.location.href = 'http://localhost:8042/calculator';
                }
              }).fail(function( data ) {
+                alert('Check your password/email combination');
              });
 
       }).fail(function( data ) {

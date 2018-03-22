@@ -4,6 +4,7 @@ var fs = require('fs');
 var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 
 var app = express();
+
 var bcrypt = require('bcrypt');
 var mysql = require('mysql');
 var connection = mysql.createConnection({
@@ -80,8 +81,32 @@ function retrieveExpression(input, con, listener) {
     });
 }
 
+function addUser(user, connection) {
+    var sql = "INSERT INTO users (email, password, is_premium) VALUES ('"+ user.email + "', '" + user.password + "', " + user.is_premium + ");";
+    connection.query(sql, function (err, result) {
+      console.log("Banchot added " + result + " result : " + sql + " with err " + err);
+    });
+}
+
+function retrieveUser(email, connection, listener) {
+    var sql = "SELECT * FROM users WHERE email = '" + email + "'";
+    connection.query(sql, function (err, result) {
+
+      if(err) {
+        listener(false);
+        console.log("errored out " + err);
+        return;
+      } else {
+         listener(result);
+         console.log("User successfully retreived " + result + " with err " + err + " where query was " + sql);
+      }
+
+
+    });
+}
+
 function createDefaultUsers(connection) {
-    var sql = "INSERT INTO users (email, password, is_premium) VALUES ('banchot@hotmail.com', 'asshole', true);";
+    var sql = "INSERT INTO users (email, password, is_premium) VALUES ('banchot@hotmail.com', 'password', true);";
     connection.query(sql, function (err, result) {
       console.log("Banchot added " + result);
     });
@@ -114,27 +139,38 @@ app.get('/simplify/history', function (req, res) {
 })
 
 
-app.get('/login', function (req, res) {
-  console.log("Login POST request hit!");
-  var username = req.body.username;
-  var password = req.body.password;
+app.post('/login', function (req, res) {
+  var email = req.body.userCredentials.username;
+  var password = req.body.userCredentials.password;
 
-  var mockUser = {
-    id: 1,
-    name: username,
-    pass: password
-  };
+  retrieveUser(email, connection, function(result) {
+      if(result && result.length > 0) {
+          user = result[0];
+          console.log(user);
+         
 
-  if (validateCredentials(username, password)){
-    const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '60000'});
-    var contentToSend = {
-      "token" : token
-    };
-    res.send(JSON.stringify(contentToSend));
-  } else {
-    var contentToSend = {"message" : "token failed."};
-    res.send(JSON.stringify(contentToSend));
-  }
+          bcrypt.compare(password, user.password, function(err, response) {
+              if(response) {
+                const token = jwt.sign({}, 'my_secret_key', {expiresIn: '60000'});
+                var contentToSend = {
+                  "token" : token
+                };
+
+                res.send(JSON.stringify(contentToSend));
+                console.log("login succeeded");
+              } else {
+                var contentToSend = {"message" : "login failed, wrong password"};
+                res.send(JSON.stringify(contentToSend));
+              }
+
+          });
+      }
+      else {
+          var contentToSend = {"message" : "login failed, no user."};
+          res.send(JSON.stringify(contentToSend));
+      }
+  });
+
 })
 
 //do stuff that requires authentication privlidges here
@@ -173,24 +209,32 @@ app.post('/signUp', function (req, res) {
   var password = req.body.userCredentials.password;
   var isPremiumRegistration = req.body.userCredentials.isPremiumRegistration;
 
-  var mockUser = {
-    id: 1,
-    name: username,
-    pass: password
+  var user = {
+    email: email,
+    password: password,
+    is_premium: isPremiumRegistration
   };
 
   if (isValidEmail(email)){
-    const token = jwt.sign(mockUser, 'my_secret_key', {expiresIn: '60000'});
+    const token = jwt.sign({}, 'my_secret_key', {expiresIn: '60000'});
     var contentToSend = {
       "token" : token
     };
     res.send(JSON.stringify(contentToSend)); // this is a 200
-    console.log("SignUp POST request hit! 1 success nigga");
+    console.log("SignUp POST request hit! 1 success ");
 
     //add new user to database
+    bcrypt.genSalt(saltRounds, function(err, salt) {
+      bcrypt.hash(password, salt, function(err, hash) {
+        user.password = hash;
+        addUser(user, connection);
+      });
+    });
+
   } else {
     res.sendStatus(403);
   }
+
 })
 
 
@@ -203,12 +247,13 @@ var server = app.listen(8042, function(){
   console.log('Node.js server running at localhost:%s', port)
 })
 
-function validateCredentials(user, pass){
-  var isValidUser = true;
+function validateCredentials(user, password){
 
-  //check to see if username and password exist in databade
+  if(!user) return false;
 
-  return isValidUser;
+  bcrypt.compare(password, user.password, function(err, res) {
+      return res
+  });
 }
 
 var simplifyFacade = new function(){
