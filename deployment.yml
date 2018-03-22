@@ -11,7 +11,7 @@ spec:
     spec:     # pod spec                  
       containers: 
       - name: annex-project
-        image: gcr.io/crafty-key-198523/fydp:v1 # image we pushed
+        image: gcr.io/assthree-198803/fydp:v1 # image we pushed
         imagePullPolicy: "Always"
         ports:
         - containerPort: 3000

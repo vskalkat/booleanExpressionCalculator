@@ -10,7 +10,7 @@ var mysql = require('mysql');
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : 'pakistan',
+  password : 'password',
   database : 'my_db'
 });
 
@@ -34,7 +34,6 @@ app.get('/calculator', (req, res) => { //anonymous function
 
 var history = []
 
-var bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 
