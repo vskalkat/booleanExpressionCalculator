@@ -5,13 +5,15 @@ $(document).ready(function(){
 
     var email = $("#emailField").val();
     var password = $("#passwordField").val();
+    var favTeacher = $("#favTeacherField").val();
 
     var isPremiumRegistration = $('#premiumOption').prop( "checked" );
 
     userCredentials = {
       "email" : email,
       "password" : password,
-      "isPremiumRegistration" : isPremiumRegistration
+      "isPremiumRegistration" : isPremiumRegistration,
+      "favTeacher" : favTeacher
     };
 
     console.log(userCredentials);

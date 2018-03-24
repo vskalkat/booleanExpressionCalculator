@@ -10,7 +10,7 @@ var mysql = require('mysql');
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : 'password',
+  password : 'pakistan',
   database : 'my_db'
 });
 
@@ -81,7 +81,7 @@ function retrieveExpression(input, con, listener) {
 }
 
 function addUser(user, connection) {
-    var sql = "INSERT INTO users (email, password, is_premium) VALUES ('"+ user.email + "', '" + user.password + "', " + user.is_premium + ");";
+    var sql = "INSERT INTO users (email, password, is_premium, fav_teacher) VALUES ('"+ user.email + "', '" + user.password + "', " + user.is_premium + ", '" + user.fav_teacher + "');";
     connection.query(sql, function (err, result) {
       console.log("Banchot added " + result + " result : " + sql + " with err " + err);
     });
@@ -105,7 +105,7 @@ function retrieveUser(email, connection, listener) {
 }
 
 function createDefaultUsers(connection) {
-    var sql = "INSERT INTO users (email, password, is_premium) VALUES ('banchot@hotmail.com', 'password', true);";
+    var sql = "INSERT INTO users (email, password, is_premium) VALUES ('banchot@hotmail.com', 'password', true, 'igor');";
     connection.query(sql, function (err, result) {
       console.log("Banchot added " + result);
     });
@@ -117,13 +117,13 @@ function createSchema(con) {
         console.log("Database created");
       });
 
-      var sql = "CREATE TABLE IF NOT EXISTS  users (email VARCHAR(255) PRIMARY KEY, password VARCHAR(255), is_premium BOOLEAN)";
+      var sql = "CREATE TABLE IF NOT EXISTS users (email VARCHAR(255) PRIMARY KEY, password VARCHAR(255), is_premium BOOLEAN, fav_teacher VARCHAR(255))";
       con.query(sql, function (err, result) {
         if (err) throw err;
         console.log("User Table created");
       });
 
-      sql = "CREATE TABLE IF NOT EXISTS  expressions (id INT PRIMARY KEY AUTO_INCREMENT, user_email VARCHAR(255), input_exp VARCHAR(255) UNIQUE, simplified_exp VARCHAR(255), steps VARCHAR(255))";
+      sql = "CREATE TABLE IF NOT EXISTS expressions (id INT PRIMARY KEY AUTO_INCREMENT, user_email VARCHAR(255), input_exp VARCHAR(255) UNIQUE, simplified_exp VARCHAR(255), steps VARCHAR(255))";
       con.query(sql, function (err, result) {
         if (err) throw err;
         console.log("Expression Table created");
@@ -207,11 +207,13 @@ app.post('/signUp', function (req, res) {
   var email = req.body.userCredentials.email;
   var password = req.body.userCredentials.password;
   var isPremiumRegistration = req.body.userCredentials.isPremiumRegistration;
+  var fav_teacher = req.body.userCredentials.fav_teacher;
 
   var user = {
     email: email,
     password: password,
-    is_premium: isPremiumRegistration
+    is_premium: isPremiumRegistration,
+    fav_teacher: fav_teacher
   };
 
   if (isValidEmail(email)){
@@ -225,8 +227,12 @@ app.post('/signUp', function (req, res) {
     //add new user to database
     bcrypt.genSalt(saltRounds, function(err, salt) {
       bcrypt.hash(password, salt, function(err, hash) {
-        user.password = hash;
-        addUser(user, connection);
+
+          bcrypt.hash(fav_teacher, salt, function(err, fav_enc) {
+            user.password = hash;
+            user.fav_teacher = fav_enc;
+            addUser(user, connection);
+          });
       });
     });
 
